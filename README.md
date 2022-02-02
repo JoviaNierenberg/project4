@@ -1,3 +1,5 @@
+![BuildStatus](https://github.com/JoviaNierenberg/project4/actions/workflows/test.yml/badge.svg?event=push)
+
 # Project 4
 Needleman Wunsch Algorithm
 
