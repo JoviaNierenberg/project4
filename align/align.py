@@ -131,29 +131,39 @@ class NeedlemanWunsch:
         self._seqB = seqB
 
         # TODO Implement the global sequence alignment here
-        for a in range(len(seqA)+1): # columns
-            for b in range(len(seqB)+1): # rows
+        for a in range(len(seqA)+1): # num rows
+            for b in range(len(seqB)+1): # num cols
                 if a==0:
-                    self._gapA_matrix[a,b] = self.gap_open + b*self.gap_extend
+                    self._gapA_matrix[a,b] = self.gap_open + b*self.gap_extend # first row/col
                     if b==0:
                         self._align_matrix[a,b] = 0 # set upper left corner to zero
                 elif a>0:
                     if b>0:
-                        char_a = seqA[a-1]
-                        char_b = seqB[b-1]
+                        # determine the match score
+                        char_a = seqA[a-1] 
+                        char_b = seqB[b-1] 
                         match = self.sub_dict[(char_a, char_b)]
                         #print("row a: " + char_a + ", column b: " + char_b + ", match score: " + str(match) )
-                        self._align_matrix[a,b] = match + max(self._align_matrix[a-1,b-1], 
-                                                              self._gapA_matrix[a-1,b-1], 
-                                                              self._gapB_matrix[a-1,b-1])
-                        self._gapA_matrix[a,b] = max(self.gap_open + self.gap_extend + self._align_matrix[a,b-1],
-                                                    self.gap_extend + self._gapA_matrix[a,b-1],
-                                                    self.gap_open + self.gap_extend + self._gapB_matrix[a,b-1])
-                        self._gapB_matrix[a,b] = max(self.gap_open + self.gap_extend + self._align_matrix[a-1,b],
-                                                    self.gap_open + self.gap_extend + self._gapA_matrix[a-1,b],
-                                                    self.gap_extend + self._gapB_matrix[a-1,b])
+                        # calculate maximums for M, A, and B matrices and update pointer
+                        m_options = [self._align_matrix[a-1,b-1], self._gapA_matrix[a-1,b-1], self._gapB_matrix[a-1,b-1]]
+                        m_max = max(m_options)
+                        self._back[a,b] = m_options.index(m_max)
+                        a_options = [self.gap_open + self.gap_extend + self._align_matrix[a,b-1],
+                                    self.gap_extend + self._gapA_matrix[a,b-1],
+                                    self.gap_open + self.gap_extend + self._gapB_matrix[a,b-1]]
+                        a_max = max(a_options)
+                        self._back_A[a,b] = a_options.index(a_max)
+                        b_options = [self.gap_open + self.gap_extend + self._align_matrix[a-1,b],
+                                    self.gap_open + self.gap_extend + self._gapA_matrix[a-1,b],
+                                    self.gap_extend + self._gapB_matrix[a-1,b]]
+                        b_max = max(b_options)
+                        self._back_B[a,b] = b_options.index(b_max)
+                        # calculate values for each matrix
+                        self._align_matrix[a,b] = match + m_max
+                        self._gapA_matrix[a,b] = a_max
+                        self._gapB_matrix[a,b] = b_max
                 if b==0:
-                    self._gapB_matrix[a,b] = self.gap_open + a*self.gap_extend
+                    self._gapB_matrix[a,b] = self.gap_open + a*self.gap_extend # first row/col
 
         return self._backtrace()
 
