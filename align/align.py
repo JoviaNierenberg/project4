@@ -178,7 +178,48 @@ class NeedlemanWunsch:
         score, the seqA alignment and the seqB alignment respectively.
         """
         # Implement this method based upon the heuristic chosen in the align method above.
-        pass
+        
+        # start with bottom right square
+        curr_a = len(self._seqA)
+        curr_b = len(self._seqB)
+        
+        # trace path from botom right to top left
+        while curr_a>0 and curr_b>0:
+            # determine maximum and index of maximum in cell
+            curr_options = [self._align_matrix[curr_a, curr_b],
+                             self._gapA_matrix[curr_a, curr_b],
+                             self._gapB_matrix[curr_a, curr_b]]
+            curr_max = max(curr_options)
+            curr_max_index = curr_options.index(curr_max)
+            
+            # assign alignment score from bottom right
+            if curr_a==len(self._seqA) and curr_b==len(self._seqB):
+                align_score = curr_max
+            
+            # match/mismatch - add to sequences, set new cell
+            if curr_max_index==0:
+                self.seqA_align = self.seqA_align + self._seqA[curr_a-1]
+                self.seqB_align = self.seqB_align + self._seqB[curr_b-1]
+                curr_a -= 1
+                curr_b -= 1
+            
+            # skip in sequence A
+            elif curr_max_index==1:
+                self.seqA_align = self.seqA_align + "-"
+                self.seqB_align = self.seqB_align + self._seqB[curr_b-1]
+                curr_b -= 1
+            
+            # skip in sequence B
+            elif curr_max_index==2:
+                self.seqA_align = self.seqA_align + self._seqA[curr_a-1]
+                self.seqB_align = self.seqB_align + "-"
+                curr_a -= 1
+            
+        # reverse strings
+        self.seqA_align = self.seqA_align[::-1]
+        self.seqB_align = self.seqB_align[::-1]
+        
+        return (align_score, self.seqA_align, self.seqB_align)
 
 
 def read_fasta(fasta_file: str) -> Tuple[str, str]:
