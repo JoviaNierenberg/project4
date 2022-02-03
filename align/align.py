@@ -143,22 +143,25 @@ class NeedlemanWunsch:
                         char_a = seqA[a-1] 
                         char_b = seqB[b-1] 
                         match = self.sub_dict[(char_a, char_b)]
-                        #print("row a: " + char_a + ", column b: " + char_b + ", match score: " + str(match) )
-                        # calculate maximums for M, A, and B matrices and update pointer
+
+                        # calculate maximums for M, A, and B matrices, storing options
                         m_options = [self._align_matrix[a-1,b-1], self._gapA_matrix[a-1,b-1], self._gapB_matrix[a-1,b-1]]
                         m_max = max(m_options)
-                        self._back[a,b] = m_options.index(m_max)
                         a_options = [self.gap_open + self.gap_extend + self._align_matrix[a,b-1],
                                     self.gap_extend + self._gapA_matrix[a,b-1],
                                     self.gap_open + self.gap_extend + self._gapB_matrix[a,b-1]]
                         a_max = max(a_options)
-                        self._back_A[a,b] = a_options.index(a_max)
                         b_options = [self.gap_open + self.gap_extend + self._align_matrix[a-1,b],
                                     self.gap_open + self.gap_extend + self._gapA_matrix[a-1,b],
                                     self.gap_extend + self._gapB_matrix[a-1,b]]
                         b_max = max(b_options)
+
+                        # update pointers
+                        self._back[a,b] = m_options.index(m_max)
+                        self._back_A[a,b] = a_options.index(a_max)
                         self._back_B[a,b] = b_options.index(b_max)
-                        # calculate values for each matrix
+
+                        # calculate values for each align/gap matrix
                         self._align_matrix[a,b] = match + m_max
                         self._gapA_matrix[a,b] = a_max
                         self._gapB_matrix[a,b] = b_max
