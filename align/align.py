@@ -131,7 +131,29 @@ class NeedlemanWunsch:
         self._seqB = seqB
 
         # TODO Implement the global sequence alignment here
-        pass
+        for a in range(len(seqA)+1): # columns
+            for b in range(len(seqB)+1): # rows
+                if a==0:
+                    self._gapA_matrix[a,b] = self.gap_open + b*self.gap_extend
+                    if b==0:
+                        self._align_matrix[a,b] = 0 # set upper left corner to zero
+                elif a>0:
+                    if b>0:
+                        char_a = seqA[a-1]
+                        char_b = seqB[b-1]
+                        match = self.sub_dict[(char_a, char_b)]
+                        #print("row a: " + char_a + ", column b: " + char_b + ", match score: " + str(match) )
+                        self._align_matrix[a,b] = match + max(self._align_matrix[a-1,b-1], 
+                                                              self._gapA_matrix[a-1,b-1], 
+                                                              self._gapB_matrix[a-1,b-1])
+                        self._gapA_matrix[a,b] = max(self.gap_open + self.gap_extend + self._align_matrix[a,b-1],
+                                                    self.gap_extend + self._gapA_matrix[a,b-1],
+                                                    self.gap_open + self.gap_extend + self._gapB_matrix[a,b-1])
+                        self._gapB_matrix[a,b] = max(self.gap_open + self.gap_extend + self._align_matrix[a-1,b],
+                                                    self.gap_open + self.gap_extend + self._gapA_matrix[a-1,b],
+                                                    self.gap_extend + self._gapB_matrix[a-1,b])
+                if b==0:
+                    self._gapB_matrix[a,b] = self.gap_open + a*self.gap_extend
 
         return self._backtrace()
 
